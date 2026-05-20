@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Один инженер вместо студии</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Science+Gothic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        #root { width: 100vw; min-height: 100vh; }
+        #frame-cube,
+        #frame-horiz {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            border: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+        .switcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 99999;
+            display: flex;
+            gap: 6px;
+            background: rgba(15, 15, 20, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 5px;
+        }
+        .switcher button {
+            background: transparent;
+            border: none;
+            color: #666;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            padding: 9px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s;
+            white-space: nowrap;
+        }
+        .switcher button:hover { color: #aaa; background: rgba(255, 255, 255, 0.04); }
+        .switcher button.active {
+            background: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+            font-weight: 600;
+        }
+        @media (max-width: 768px) {
+            .switcher {
+                bottom: 14px;
+                right: 50%;
+                transform: translateX(50%);
+            }
+            .switcher button { font-size: 0.65rem; padding: 7px 10px; }
+            #cursor { display: none !important; }
+        }
+    </style>
+  <script type="module" crossorigin src="./assets/index-rL3U2xZr.js"></script>
+</head>
+<body>
+    <div id="cursor"></div>
+    <div id="root"></div>
+    <iframe id="frame-cube" title="Куб — mobile" allow="clipboard-write"></iframe>
+    <iframe id="frame-horiz" title="Горизонтальная версия" allow="clipboard-write"></iframe>
+
+    <div class="switcher">
+        <button id="btn-cube" class="active" data-version="cube">◻ КУБ</button>
+        <button id="btn-horiz" data-version="horiz">▬ ГОРИЗОНТ</button>
+    </div>
+
+</body>
+</html>
