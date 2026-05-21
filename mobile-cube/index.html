@@ -105,6 +105,47 @@
             text-transform: uppercase;
             color: #888;
             margin-bottom: 16px;
+            position: relative;
+            display: inline-block;
+            transition: color 0.15s;
+        }
+        .hero-eyebrow.glitching { color: transparent; }
+        .hero-eyebrow::before,
+        .hero-eyebrow::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            font-size: 0.87rem;
+            letter-spacing: 4px;
+        }
+        .hero-eyebrow.glitching::before {
+            opacity: 0.8;
+            color: var(--accent);
+            clip-path: inset(0 0 50% 0);
+            animation: eb-l 0.3s steps(3) forwards;
+        }
+        .hero-eyebrow.glitching::after {
+            opacity: 0.8;
+            color: #f0f0f0;
+            clip-path: inset(50% 0 0 0);
+            animation: eb-r 0.3s steps(3) forwards;
+        }
+        @keyframes eb-l {
+            0%   { transform: translate(0, 0); }
+            33%  { transform: translate(-3px, 1px); }
+            66%  { transform: translate(2px, -1px); }
+            100% { transform: translate(0, 0); }
+        }
+        @keyframes eb-r {
+            0%   { transform: translate(0, 0); }
+            33%  { transform: translate(3px, -1px); }
+            66%  { transform: translate(-2px, 1px); }
+            100% { transform: translate(0, 0); }
         }
 
         .hero-title {
@@ -125,7 +166,50 @@
             color: #999;
             letter-spacing: 0.5px;
             line-height: 1.8;
+            text-align: center;
+            margin-top: 12px;
+            position: relative;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .roles-wrap {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            text-align: center;
+        }
+        .roles-main,
+        .roles-glitch-l,
+        .roles-glitch-r {
+            display: block;
             white-space: pre-line;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
+            font-size: inherit;
+            text-align: center;
+        }
+        .roles-main { color: #999; }
+        .hero-roles.glitching .roles-main { visibility: hidden; }
+        .roles-glitch-l,
+        .roles-glitch-r {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .roles-glitch-l {
+            color: var(--accent);
+            clip-path: inset(0 0 50% 0);
+            animation: eb-l 0.3s steps(3) forwards;
+        }
+        .roles-glitch-r {
+            color: #f0f0f0;
+            clip-path: inset(50% 0 0 0);
+            animation: eb-r 0.3s steps(3) forwards;
         }
 
         .scroll-hint {
@@ -358,11 +442,16 @@
     <div class="content">
         <section class="section section-hero" id="s0">
             <div class="hero-intro">
-                <div class="hero-eyebrow">НЕ СТУДИЯ</div>
+                <div class="hero-eyebrow" id="heroEyebrow" data-text="СТУДИЯ">СТУДИЯ</div>
                 <h1 class="hero-title">Коллективный<br><span class="accent">разум</span></h1>
-                <p class="hero-roles">дизайнер · разработчик · копирайтер
-маркетолог · SEO · аналитик · DevOps
-один человек — рой агентов</p>
+                <p class="hero-roles" id="heroRoles">
+                    <span class="roles-wrap">
+                        <span class="roles-main" id="rolesMain">дизайнер · разработчик · копирайтер
+маркетолог · SEO · аналитик · DevOps</span>
+                        <span class="roles-glitch-l" id="rolesGlitchL" hidden aria-hidden="true"></span>
+                        <span class="roles-glitch-r" id="rolesGlitchR" hidden aria-hidden="true"></span>
+                    </span>
+                </p>
             </div>
             <div class="scroll-hint" aria-hidden="true">
                 <span>СКРОЛЛЬ</span>
@@ -769,6 +858,105 @@
         animate();
 
         setTimeout(() => loader.classList.add('hidden'), 800);
+    </script>
+
+    <script>
+    (function initHeroGlitch() {
+        const ROLES_TEXT = 'дизайнер · разработчик · копирайтер\nмаркетолог · SEO · аналитик · DevOps';
+        const AI_TEXT = 'один человек - рой агентов';
+
+        const eyebrow = document.getElementById('heroEyebrow');
+        const roles = document.getElementById('heroRoles');
+        const rolesMain = document.getElementById('rolesMain');
+        const rolesGlitchL = document.getElementById('rolesGlitchL');
+        const rolesGlitchR = document.getElementById('rolesGlitchR');
+        if (!eyebrow || !roles) return;
+
+        let eyebrowState = 0;
+        let rolesState = 0;
+        let eyebrowDone = false;
+        let rolesDone = false;
+        const timers = [];
+
+        function sched(fn, ms) {
+            timers.push(setTimeout(fn, ms));
+        }
+
+        function setEyebrowState(state) {
+            eyebrowState = state;
+            const glitch = state === 1 || state === 3;
+            const text = (state === 0 || state === 1) ? 'СТУДИЯ' : 'НЕ СТУДИЯ';
+            eyebrow.textContent = text;
+            eyebrow.dataset.text = text;
+            eyebrow.classList.toggle('glitching', glitch);
+        }
+
+        function restartGlitchAnim() {
+            [rolesGlitchL, rolesGlitchR].forEach(el => {
+                el.style.animation = 'none';
+                void el.offsetWidth;
+                el.style.animation = '';
+            });
+        }
+
+        function setRolesState(state) {
+            rolesState = state;
+            const glitch = state === 1 || state === 3;
+            const showAI = state === 2 || state === 3;
+            const text = showAI ? AI_TEXT : ROLES_TEXT;
+            rolesMain.textContent = text;
+            roles.classList.toggle('glitching', glitch);
+            rolesGlitchL.textContent = text;
+            rolesGlitchR.textContent = text;
+            if (glitch) {
+                rolesGlitchL.hidden = false;
+                rolesGlitchR.hidden = false;
+                restartGlitchAnim();
+            } else {
+                rolesGlitchL.hidden = true;
+                rolesGlitchR.hidden = true;
+            }
+        }
+
+        function forceGlitch() {
+            if (eyebrowState === 2 && rolesState === 2) return;
+            timers.forEach(clearTimeout);
+            timers.length = 0;
+            eyebrowDone = true;
+            rolesDone = true;
+            if (eyebrowState !== 2) {
+                setEyebrowState(1);
+                sched(() => setEyebrowState(2), 300);
+            }
+            if (rolesState !== 2) {
+                setRolesState(1);
+                sched(() => setRolesState(2), 300);
+            }
+        }
+
+        setEyebrowState(0);
+        setRolesState(0);
+
+        sched(() => setEyebrowState(1), 2500);
+        sched(() => setEyebrowState(2), 2800);
+        sched(() => setEyebrowState(3), 4300);
+        sched(() => { setEyebrowState(0); eyebrowDone = true; }, 4600);
+
+        sched(() => setRolesState(1), 2000);
+        sched(() => setRolesState(2), 2300);
+        sched(() => setRolesState(3), 3800);
+        sched(() => { setRolesState(0); rolesDone = true; }, 4100);
+
+        roles.addEventListener('touchstart', () => {
+            if (rolesState === 0) forceGlitch();
+        }, { passive: true });
+
+        window.addEventListener('scroll', () => {
+            const h = document.body.scrollHeight - window.innerHeight;
+            const p = Math.min(Math.max(window.scrollY / Math.max(h, 1), 0), 1);
+            if (p > 0.02) forceGlitch();
+        }, { passive: true });
+    })();
     </script>
 </body>
 </html>
